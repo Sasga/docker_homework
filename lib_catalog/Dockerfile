@@ -1,12 +1,13 @@
 FROM python:3.9.11-alpine3.15
 
-WORKDIR /
+WORKDIR /app
 
-RUN apk add --update --no-cache g++ gcc libxml2-dev libxslt-dev postgresql-dev python3-dev musl-dev 
-RUN pip install psycopg2-binary
+RUN apk add --update --no-cache g++ gcc bash libxml2-dev libxslt-dev postgresql-dev python3-dev musl-dev 
 
-COPY . .
+COPY requirements.txt .
 
 RUN pip install -r requirements.txt
 
-ENTRYPOINT ["python", "manage.py"]
+COPY . .
+
+ENTRYPOINT ["./docker-entrypoint.sh"]
