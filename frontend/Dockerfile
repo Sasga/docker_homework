@@ -2,11 +2,15 @@ FROM node:10-alpine as builder
 
 WORKDIR /app
 
+RUN chown node:node /app
+
+USER node
+
 COPY package*.json ./
 
 RUN npm install
 
-COPY . .
+COPY --chown=node:node . .
 
 RUN npm run build
 
