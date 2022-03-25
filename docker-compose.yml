@@ -1,0 +1,73 @@
+version: '3.9'  # optional since Compose v1.27.0
+
+### NETWORKS
+
+networks:
+  frontend:
+  backend:
+
+### SERVICE
+
+services:
+
+  ### DATABASE
+
+  homework-database:
+    image: postgres:10.5
+    container_name: database 
+    environment:
+      - POSTGRES_USER=django
+      - POSTGRES_PASSWORD=django
+      - POSTGRES_DB=django
+      - POSTGRES_HOST_AUTH_METHOD=trust
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      ###    ports:
+      ###- '5432:5432'
+    volumes: 
+      - db:/var/lib/postgresql/data
+
+  homework-frontend:
+    build: 
+      dockerfile: Dockerfile
+      context: ./frontend 
+    container_name: frontend
+    ports:
+      - '80:80'
+    networks: 
+      - frontend
+    healthcheck:
+      test: ["CMD", "service", "nginx", "status"] 
+      timeout: 10s
+    depends_on:
+      homework-backend:
+        condition: service_healthy
+
+  homework-backend:
+    build:
+      dockerfile: Dockerfile
+      context: ./lib_catalog
+    container_name: backend
+    ports:
+      - '8000:8000'
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "curl", "--fail", "http://localhost:8000/api/v1/lib/book/"] 
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    depends_on:
+      homework-database:
+        condition: service_healthy
+
+
+volumes:
+  db:
+    driver: local
