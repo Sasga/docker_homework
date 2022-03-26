@@ -15,6 +15,11 @@ services:
   homework-database:
     image: postgres:10.5
     container_name: database 
+    deploy:
+      resources:
+        limits:
+          cpus: 2
+          memory: 512M
     environment:
       - POSTGRES_USER=django
       - POSTGRES_PASSWORD=django
@@ -32,6 +37,8 @@ services:
     volumes: 
       - db:/var/lib/postgresql/data
 
+   ### FRONTEND      
+
   homework-frontend:
     build: 
       dockerfile: Dockerfile
@@ -39,6 +46,11 @@ services:
     container_name: frontend
     ports:
       - '80:80'
+    deploy:
+      resources:
+        limits:
+          cpus: 1 
+          memory: 256M
     networks: 
       - frontend
     healthcheck:
@@ -48,11 +60,18 @@ services:
       homework-backend:
         condition: service_healthy
 
+  ### BACKEND
+
   homework-backend:
     build:
       dockerfile: Dockerfile
       context: ./lib_catalog
     container_name: backend
+    deploy:
+      resources:
+        limits:
+          cpus: 1
+          memory: 256M
     ports:
       - '8000:8000'
     networks:
